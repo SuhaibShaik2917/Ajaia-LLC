@@ -1,0 +1,52 @@
+// Docket schema. Frozen after Phase 2.
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Prisma 7 moved connection URLs out of the schema: see prisma.config.ts
+// (DIRECT_URL preferred for CLI commands) and src/lib/db.ts (DATABASE_URL pool).
+datasource db {
+  provider = "postgresql"
+}
+
+enum ShareRole {
+  VIEWER
+  EDITOR
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime        @default(now())
+  owned        Document[]
+  shares       DocumentShare[]
+}
+
+model Document {
+  id        String          @id @default(cuid())
+  ownerId   String
+  title     String          @db.VarChar(200) @default("Untitled document")
+  content   Json
+  version   Int             @default(1)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  owner     User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  shares    DocumentShare[]
+
+  @@index([ownerId, updatedAt(sort: Desc)])
+}
+
+model DocumentShare {
+  id         String    @id @default(cuid())
+  documentId String
+  userId     String
+  role       ShareRole
+  createdAt  DateTime  @default(now())
+  document   Document  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, userId])
+  @@index([userId])
+}

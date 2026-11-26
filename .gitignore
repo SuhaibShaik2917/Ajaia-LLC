@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# env
+.env
+.env*.local
+.env.production
+!.env.example
+
+# next
+.next/
+out/
+build/
+next-env.d.ts
+
+# testing
+coverage/
+.vitest/
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+tsconfig.tsbuildinfo
+.vercel
+.devdb/

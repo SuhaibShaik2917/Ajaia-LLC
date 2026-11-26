@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface text-ink antialiased;
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    @apply bg-brand-100 text-brand-700;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
+  }
+}
+
+@layer components {
+  /* ---------------------------------------------------------------- editor */
+  .docket-editor .ProseMirror {
+    @apply min-h-[65vh] text-[16px] leading-7 text-ink outline-none;
+  }
+
+  .docket-editor .ProseMirror > * + * {
+    margin-top: 0.75em;
+  }
+
+  .docket-editor .ProseMirror h1 {
+    @apply mt-6 text-[2rem] font-semibold leading-tight tracking-tight;
+  }
+
+  .docket-editor .ProseMirror h2 {
+    @apply mt-5 text-2xl font-semibold leading-snug;
+  }
+
+  .docket-editor .ProseMirror h3 {
+    @apply mt-4 text-xl font-semibold leading-snug;
+  }
+
+  .docket-editor .ProseMirror p {
+    @apply text-[16px] leading-7;
+  }
+
+  .docket-editor .ProseMirror ul {
+    @apply list-disc pl-6;
+  }
+
+  .docket-editor .ProseMirror ol {
+    @apply list-decimal pl-6;
+  }
+
+  .docket-editor .ProseMirror li {
+    @apply my-1 leading-7;
+  }
+
+  .docket-editor .ProseMirror li > ul,
+  .docket-editor .ProseMirror li > ol {
+    @apply my-1;
+  }
+
+  .docket-editor .ProseMirror strong {
+    @apply font-semibold;
+  }
+
+  .docket-editor .ProseMirror u {
+    text-underline-offset: 2px;
+  }
+
+  .docket-editor .ProseMirror blockquote {
+    @apply border-l-4 border-line pl-4 italic text-mute;
+  }
+
+  .docket-editor .ProseMirror code {
+    @apply rounded bg-surface px-1 py-0.5 font-mono text-[0.875em];
+  }
+
+  .docket-editor .ProseMirror pre {
+    @apply overflow-x-auto rounded-lg bg-ink p-4 font-mono text-sm text-white;
+  }
+
+  .docket-editor .ProseMirror hr {
+    @apply my-6 border-line;
+  }
+
+  .docket-editor .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply pointer-events-none float-left h-0 text-mute/70;
+  }
+
+  .docket-editor[data-readonly="true"] .ProseMirror {
+    @apply cursor-default;
+  }
+
+  /* -------------------------------------------------------------- scrollbar */
+  .thin-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+  .thin-scroll::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-line;
+  }
+}
