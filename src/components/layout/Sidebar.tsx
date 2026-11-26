@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Files, LogOut, Plus, Share2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAppShell } from "@/components/layout/AppShell";
@@ -27,7 +27,6 @@ type SidebarProps = {
 
 export function Sidebar({ user, onNavigate, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const { openImport, createDocument, creating } = useAppShell();
   const searchParams = useSearchParams();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -39,8 +38,9 @@ export function Sidebar({ user, onNavigate, onClose }: SidebarProps) {
     setLoggingOut(true);
     try {
       await api.post("/api/auth/logout");
-      router.replace("/login");
-      router.refresh();
+      // Full navigation on purpose: the session cookie is per browser profile, so a
+      // client-side transition can leave the previous user's cached shell on screen.
+      window.location.assign("/login");
     } catch {
       toast.error("Could not sign out. Please try again.");
       setLoggingOut(false);

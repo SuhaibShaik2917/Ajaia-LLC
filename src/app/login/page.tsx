@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Eye, EyeOff, FileText, LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ApiClientError, api } from "@/lib/api-client";
@@ -17,7 +16,6 @@ const DEMO_ACCOUNTS = [
 ];
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("alice@demo.test");
   const [password, setPassword] = useState(DEMO_PASSWORD);
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +34,9 @@ export default function LoginPage() {
     setError(null);
     try {
       await api.post<{ user: SessionUser }>("/api/auth/login", credentials);
-      router.replace(nextPath);
-      router.refresh();
+      // Hard navigation: guarantees every cached server component (including the app
+      // shell's user) is re-fetched for the account that just signed in.
+      window.location.replace(nextPath);
     } catch (loginError) {
       setError(
         loginError instanceof ApiClientError

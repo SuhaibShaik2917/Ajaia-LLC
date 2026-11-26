@@ -45,6 +45,30 @@ export function DashboardPage() {
     void load();
   }, [load]);
 
+  // Sharing has no push channel, so a recipient who left this tab open would otherwise
+  // never see a new document until a manual reload. Refresh quietly when the tab regains
+  // focus: no skeleton, and a failure keeps the last good list.
+  useEffect(() => {
+    const refreshQuietly = () => {
+      if (document.visibilityState !== "visible") return;
+      api
+        .get<ListsResponse>("/api/documents")
+        .then((response) => {
+          setData(response);
+          setStatus("ready");
+        })
+        .catch(() => {
+          /* keep showing the last successful list */
+        });
+    };
+    window.addEventListener("focus", refreshQuietly);
+    document.addEventListener("visibilitychange", refreshQuietly);
+    return () => {
+      window.removeEventListener("focus", refreshQuietly);
+      document.removeEventListener("visibilitychange", refreshQuietly);
+    };
+  }, []);
+
   const filtered = useMemo(() => {
     if (!data) return [];
     const list = view === "owned" ? data.owned : data.shared;

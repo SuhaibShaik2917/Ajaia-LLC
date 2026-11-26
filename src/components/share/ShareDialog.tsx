@@ -64,7 +64,9 @@ export function ShareDialog({ open, onClose, documentId, onSharesChanged }: Shar
         return [...rest, share].sort((a, b) => a.name.localeCompare(b.name));
       });
       setEmail("");
-      toast.success(`${share.email} can now ${role === "VIEWER" ? "view" : "edit"}.`);
+      toast.success(
+        `${share.email} can now ${role === "VIEWER" ? "view" : "edit"}. They will find it under "Shared with me".`
+      );
       onSharesChanged?.();
     } catch (shareError) {
       setError(

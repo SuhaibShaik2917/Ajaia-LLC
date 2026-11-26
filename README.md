@@ -75,6 +75,13 @@ All demo users share the password **`Demo@1234`**.
 | `carol@demo.test` | Carol Chen | **Editor** on Alice's "Q3 hiring plan" |
 | `dave@demo.test` | Dave Diaz | No shares — use to verify 404s |
 
+> **Testing sharing needs two browsers, not two tabs.** The session is one httpOnly cookie
+> per browser profile, so signing in as Bob in a second tab silently replaces Alice's
+> session — you stay Alice everywhere. Use a **private/incognito window** (or a second
+> browser) for the second user, and sign out before switching accounts in the first one.
+> Signing in and out now performs a full page load, so the shell always reflects the
+> account that actually holds the cookie.
+
 ---
 
 ## Environment variables

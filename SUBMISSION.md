@@ -37,6 +37,9 @@ Password for every account: `Demo@1234`
 | `carol@demo.test` | **Editor** on Alice's "Q3 hiring plan" |
 | `dave@demo.test` | No shares — use to demonstrate 404 for unshared documents |
 
+> **Reviewers:** open the second user in a **private/incognito window**. The session is a
+> single cookie per browser profile, so a second tab cannot hold a second account.
+
 ## Status matrix
 
 ### P0 — complete

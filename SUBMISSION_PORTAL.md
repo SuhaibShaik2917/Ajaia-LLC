@@ -22,6 +22,8 @@
 | `carol@demo.test` | **Editor** on Alice's "Q3 hiring plan" | A non-owner who can edit |
 | `dave@demo.test` | No shares | `404` for a document he cannot see |
 
+**Use a private/incognito window for the second user** — the session is a single cookie per browser profile, so a second tab cannot hold a second account.
+
 **60-second tour:** sign in as Alice → open "Product launch checklist" → it is already shared with Bob. Open a private window, sign in as Bob: the same document appears under *Shared with me*, read-only, toolbar disabled. Sign in as Dave: the document does not exist for him.
 
 ---
