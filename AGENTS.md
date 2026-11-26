@@ -82,6 +82,7 @@ npm run lint       # next lint
 npm run db:push    # prisma db push (schema → database)
 npm run db:seed    # prisma db seed (idempotent)
 npm run db:init    # SQL fallback when the Prisma schema engine is unavailable
+./scripts/dev-postgres.sh  # disposable local Postgres (dev convenience)
 ```
 
 ## API contract

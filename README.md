@@ -57,6 +57,11 @@ npm run dev               # http://localhost:3000
 
 Then sign in with a demo chip on `/login` (one click fills and submits).
 
+**No Postgres yet?** `./scripts/dev-postgres.sh` starts a disposable local cluster
+(Linux x64; installs the npm-packaged binaries with `--no-save`, data in
+`.devdb/`) and prints the `DATABASE_URL` values to use. It creates both `docket`
+and `docket_test`.
+
 ### Demo accounts
 
 All demo users share the password **`Demo@1234`**.
