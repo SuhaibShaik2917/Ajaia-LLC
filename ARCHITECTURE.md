@@ -208,7 +208,38 @@ server-side).
 | **In-memory rate limiting** | No extra infrastructure for a demo | Per-instance on Vercel |
 | **Middleware redirects only** | Middleware can be bypassed for API routes; every handler re-checks | Slightly more code per route |
 
-## 9. Assumptions
+## 9. Production topology
+
+```
+Reviewer ──HTTPS──▶ Vercel edge (iad1) ──▶ Next.js 14 (App Router, Node runtime)
+                                              │
+                                              │ Prisma 7 + @prisma/adapter-pg (pooled)
+                                              ▼
+                             aws-1-ap-southeast-1.pooler.supabase.com:6543 (pgbouncer)
+                                              │
+                                              ▼
+                                 Supabase Postgres 17 · role `docket_app`
+                                 RLS enabled on User / Document / Share
+```
+
+- **Pooler, not the direct host.** `db.<ref>.supabase.co` publishes IPv6 (AAAA) records
+  only; Vercel functions have no IPv6 egress. `DATABASE_URL` therefore points at the
+  pgbouncer host with `?pgbouncer=true&connection_limit=1` (transaction mode plus a single
+  connection per function instance). `DIRECT_URL` stays on `:5432` for CLI work.
+- **Least-privilege role.** The app connects as `docket_app` (`LOGIN`, `NOSUPERUSER`,
+  `NOBYPASSRLS`); the `anon` and `authenticated` PostgREST roles have no table privileges,
+  so the database is not reachable through Supabase's auto-generated API. Verified with
+  `select count(*) from "User"` under each role.
+- **External database ⇒ stateless builds.** Every deploy is disposable: data lives in
+  Supabase, so redeploys and rollbacks do not touch documents.
+- **Deployment Protection must be off** for the public demo. The default policy intercepts
+  every `*.vercel.app` request with a `302` to `vercel.com/sso-api` before the app runs,
+  which presents as "login is broken" (401/302) rather than a protection page.
+- **`prisma` and `dotenv` are runtime dependencies.** With `NODE_ENV=production` Vercel
+  omits `devDependencies`, and the build (`prisma generate && next build`) plus the
+  `postinstall` hook need the CLI.
+
+## 10. Assumptions
 
 - Seeded demo users only; one shared password; no sign-up or password reset.
 - Sharing targets an existing user by email (unknown email → `USER_NOT_FOUND`).
@@ -220,7 +251,7 @@ server-side).
   folders or tags.
 - Desktop-first UI, usable at 375 px (sidebar collapses into a drawer).
 
-## 10. Out of scope
+## 11. Out of scope
 
 Real-time collaboration, comments, version history, export (PDF/DOCX), images,
 tables, DOCX import, email notifications, audit logs, multi-tenant orgs.

@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | **Repository** | https://github.com/SuhaibShaik2917/Ajaia-LLC (branch `arena/b8fb2d87-ajaia-llc`) |
-| **Live URL** | **Not deployed.** This build environment had no Vercel/Supabase credentials and outbound network was limited to GitHub and npm, so a hosted deployment could not be created here. The repo is deployment-ready; see [README → Deployment](./README.md#deployment-vercel--supabase). |
+| **Live URL** | **https://docket-suhaibshaik2917.vercel.app** (Vercel project `docket` · Supabase Postgres 17 `ap-southeast-1`) — verified with `node scripts/smoke-prod.mjs`: **24/24 checks passed**. Settings: [README → Deployment](./README.md#deployment-vercel--supabase) |
 | **Local run** | `npm install && cp .env.example .env && npx prisma db push && npm run db:seed && npm run dev` |
 | **Video** | `VIDEO_URL.txt` → `PASTE_URL_HERE` (recorded by the candidate after this build) |
 | **Docs** | [README](./README.md) · [ARCHITECTURE](./ARCHITECTURE.md) · [AI_WORKFLOW](./AI_WORKFLOW.md) · [AGENTS](./AGENTS.md) · [ai-log](./ai-log.md) |
@@ -37,7 +37,7 @@ Password for every account: `Demo@1234`
 | Viewer UI read-only **and** server 403 on Viewer PATCH | ✅ | Disabled toolbar + banner; `viewer PATCH → 403`, DB unchanged (test) |
 | Unshared user → 404; unauthenticated → 401 | ✅ | `tests/permissions.test.ts`, `tests/documents.test.ts` |
 | `npm test` green, `tsc --noEmit` clean, `next build` succeeds | ✅ | 44/44 tests, 0 type errors, 0 lint warnings, successful production build |
-| Deployed (Vercel + Supabase) with smoke test | ❌ **not done** | No cloud credentials/egress in this environment; steps documented in README, and `node scripts/smoke-prod.mjs <url>` runs the full acceptance flow (24 checks, passing against localhost) |
+| Deployed (Vercel + Supabase) with smoke test | ✅ | Live at https://docket-suhaibshaik2917.vercel.app against Supabase Postgres 17; `scripts/smoke-prod.mjs` → **24/24 checks passed** on that URL (login ×3, dashboard, create, format round-trip, `.md` import, `.pdf` reject, share, Viewer 403, promote to Editor, unshared 404, revoke, delete). Data survives redeploys — the database is external to the build |
 | README, ARCHITECTURE, AI_WORKFLOW, SUBMISSION, VIDEO_URL.txt | ✅ | This repository (video URL is a placeholder by design) |
 | No secrets committed; `.env.example` present | ✅ | `.env` is git-ignored and never committed; `.env.example` documents every variable |
 
@@ -59,8 +59,10 @@ out of scope in the brief; the remaining time went into tests and documentation.
 
 ## Known issues / limitations
 
-1. **Not deployed.** The only unmet acceptance item. Everything needed is in the
-   repo; the deployment and production smoke-test steps are in `README.md`.
+1. **Deployment protection is disabled on the live project.** Vercel's default
+   `all_except_custom_domains` policy would hide the demo behind `vercel.com/sso-api`;
+   the switch is documented in `README.md` so it can be re-enabled once a reviewer has
+   finished. If you fork and redeploy, that is the one setting to remember.
 2. **No real-time collaboration.** Concurrent edits are last-write-wins; a stale
    `baseVersion` returns 409 and *Reload latest* discards unsaved local edits.
 3. **Markdown cannot express underline.** `__x__` imports as bold (CommonMark);
@@ -89,7 +91,7 @@ out of scope in the brief; the remaining time went into tests and documentation.
 | 2:50 | Bob in a private window: *Shared with me* lists the document, read-only banner, disabled toolbar and title. Optionally show the blocked PATCH `403` in DevTools → Network. |
 | 3:20 | Alice changes Bob to **Editor**; Bob edits and saves; Alice revokes; Bob's document turns into "Document not found" (404 by design). |
 | 3:50 | Architecture: one permission service, every API route verifies the session, autosave debounce + single in-flight request + 409 handling, server-side import with the editor's extension set. |
-| 4:15 | AI workflow: what the agent accelerated, and one rejected suggestion (Prisma 5 native engines → Prisma 7 driver adapter, because the engine binaries could not be downloaded here). Close with limitations (no realtime, deployment pending). |
+| 4:15 | AI workflow: what the agent accelerated, and two rejected suggestions (Prisma 5 native engines → Prisma 7 driver adapter, because the engine binaries could not be downloaded here; and the Vercel `aws-0` pooler host, which answered but rejected the tenant — the probe proved `aws-1` was correct). Close on the live URL and the remaining limitation (no realtime). |
 
 ## Final acceptance checklist
 
@@ -103,7 +105,7 @@ out of scope in the brief; the remaining time went into tests and documentation.
 - [x] Viewer UI read-only AND server returns 403 on Viewer PATCH
 - [x] Unshared user → 404; unauthenticated → 401
 - [x] `npm test` green, `tsc --noEmit` clean, `next build` succeeds
-- [ ] Deployed (Vercel + Supabase), data survives redeploy, smoke test passes
-      — **blocked: no cloud credentials in this environment**
+- [x] Deployed (Vercel + Supabase), data survives redeploy, smoke test passes
+      — https://docket-suhaibshaik2917.vercel.app · `24/24 checks passed`
 - [x] README, ARCHITECTURE, AI_WORKFLOW, SUBMISSION, VIDEO_URL.txt complete and accurate
 - [x] No secrets committed; `.env.example` present

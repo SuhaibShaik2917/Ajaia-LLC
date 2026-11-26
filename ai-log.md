@@ -144,13 +144,38 @@ in 7 files (documents, permissions, import, content, format, autosave, toolbar).
 
 **Verified:** `npm test` → 7 files / 44 tests passed.
 
-## Phase 10 — Deploy (blocked, ~10 min investigating)
+## Phase 10 — Deploy (~35 min, resumed after Supabase + Vercel were connected)
 
-**Attempted:** reviewed deployment paths (Vercel + Supabase, Render fallback).
-**Blocked:** no Vercel/Supabase credentials in this environment and outbound
-network is restricted to GitHub/npm, so no hosted deployment could be created from
-here. This is recorded as a known gap in `SUBMISSION.md`; the repository is
-deployment-ready and the exact steps are in `README.md`.
+**Attempted first, blocked:** the sandbox has no outbound network to `api.vercel.com`,
+`*.supabase.com` or `*.vercel.app`, so deployment moved to the Supabase and Vercel
+connectors and every check that needed real traffic ran *inside a Vercel build*.
+
+**Did:**
+1. Supabase: applied the schema, seeded 4 users / 5 documents / 2 shares, enabled RLS on
+   all three tables, created the least-privilege role `docket_app`, and revoked every
+   grant from `anon`/`authenticated`.
+2. Wrote `scripts/db-probe.mjs` to answer the one unknown the connectors could not: which
+   pooler host this project lives on. Run as the first build step it printed
+   `FAIL aws-0 … tenant/user docket_app.<ref> not found` and
+   `RESULT_OK host=aws-1-ap-southeast-1.pooler.supabase.com port=6543 users=4`.
+   Also learned `db.<ref>.supabase.co` is IPv6-only → unusable from Vercel functions.
+3. Vercel: project `docket` (framework `nextjs`), env `DATABASE_URL`/`DIRECT_URL`
+   (pooler `aws-1`, `:6543` / `:5432`) and `AUTH_SECRET`; build command left at
+   `npm run build`. Deployed from the branch with `create_deployment` (`git_source` with
+   `repoId` — the account has no GitHub integration, so `create_project(git_repository)`
+   fails with 400 and the repository is deployed per-deployment instead).
+4. First live smoke run failed 2/8: `/login` → `302` to `vercel.com/sso-api`, login → `401`.
+   Wrote `scripts/probe-prod.mjs`, which showed the `302` + `_vercel_sso_nonce` cookie —
+   **Deployment Protection**, not an app bug. Asked the owner to disable Vercel
+   Authentication for the project (no connector tool exposes protection settings).
+5. Re-ran probe + smoke as a Vercel build step: `/login 200`, `/api/auth/me 401 JSON`,
+   then **`24/24 checks passed`** against https://docket-suhaibshaik2917.vercel.app.
+
+**Rejected/corrected:** guessed `aws-0` pooler (rejected by the DB itself); setting
+`NODE_ENV=production` in the project env (would drop `devDependencies` and break
+`prisma generate` — instead `prisma`/`dotenv` were moved to `dependencies`); a GitHub
+Actions smoke workflow (workflow_dispatch is not registered until the file is on the
+default branch, so the build-step harness was used instead).
 
 ## Phase 11 — Docs (~20 min)
 
@@ -166,3 +191,13 @@ against the code or a command output.
 clean database, re-run the API smoke matrix, review `git status` for secrets.
 
 **Result:** all green; no `.env` or secrets committed; `.env.example` present.
+
+## Phase 13 — Post-deploy verification (~10 min)
+
+**Did:** `node scripts/probe-prod.mjs` + `node scripts/smoke-prod.mjs` executed against the
+production URL from inside a Vercel build; updated `README.md` (live URL, real
+deployment settings, the two traps: pooler hostname and Deployment Protection),
+`ARCHITECTURE.md` §9 (production topology), `SUBMISSION.md` (live row, acceptance row
+❌→✅, limitations, video script beat) and this log.
+
+**Result:** `24/24 checks passed`; production build READY; local gates still green.

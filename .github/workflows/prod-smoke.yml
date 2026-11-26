@@ -1,7 +1,9 @@
 name: Production smoke test
 
-# The sandbox used to build this project cannot reach *.vercel.app, so the
-# acceptance smoke test runs here instead, against the live deployment.
+# Optional: run the acceptance smoke test against the live deployment from CI.
+# workflow_dispatch only appears once this file is on the default branch, which is
+# why the first production run was executed as a Vercel build step instead
+# (see README -> Deployment).
 on:
   workflow_dispatch:
     inputs:

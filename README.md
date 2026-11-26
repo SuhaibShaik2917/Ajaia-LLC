@@ -5,8 +5,10 @@ AI-Native Full Stack assessment: **write, format, autosave, import and share**
 documents with roles the server actually enforces.
 
 - **Repo:** https://github.com/SuhaibShaik2917/Ajaia-LLC (branch `arena/b8fb2d87-ajaia-llc`)
-- **Live URL:** _not deployed from this build environment — see [Deployment](#deployment)._
-  The app runs locally with two commands and the repository is deployment-ready.
+- **Live URL:** **https://docket-suhaibshaik2917.vercel.app** — Vercel project `docket`
+  (region `iad1`) against Supabase Postgres 17 (`ap-southeast-1`). Verified end to end:
+  `node scripts/smoke-prod.mjs` → **24/24 checks passed** against that URL.
+  Demo login: `alice@demo.test` / `Demo@1234`.
 - **Demo video:** `VIDEO_URL.txt` (placeholder to be filled after recording)
 
 ---
@@ -104,6 +106,8 @@ the browser — every env var is read on the server only.
 | `npm run db:seed` | Seed demo users/documents/shares (idempotent) |
 | `npm run db:init` | Apply `prisma/sql/init.sql` with `pg` (fallback, see below) |
 | `node scripts/smoke-prod.mjs <url>` | End-to-end acceptance smoke test against a running app (local or deployed) |
+| `node scripts/probe-prod.mjs <url>` | Prints status, key headers and a body snippet per endpoint — deployment triage |
+| `node scripts/db-probe.mjs` | Finds the reachable Supabase pooler host/port for a project (run inside a Vercel build) |
 
 ---
 
@@ -161,6 +165,29 @@ Permission ranking: **OWNER > EDITOR > VIEWER**. `view` ≥ VIEWER, `edit` ≥ E
 
 ## Deployment (Vercel + Supabase)
 
+This is the deployment that is actually live, not a hypothetical one.
+
+| Setting | Value |
+| --- | --- |
+| App | https://docket-suhaibshaik2917.vercel.app (Vercel project `docket`, framework preset `nextjs`, region `iad1`) |
+| Build command | `npm run build` → `prisma generate && next build` (`prisma` + `dotenv` are runtime deps so the build works with `NODE_ENV=production`) |
+| Database | Supabase project `ajaia`, Postgres 17.12, region `ap-southeast-1` |
+| DB role | `docket_app` — `LOGIN`, `NOSUPERUSER`, `NOBYPASSRLS`; `anon` and `authenticated` have all privileges revoked |
+| `DATABASE_URL` | pooler `aws-1-ap-southeast-1.pooler.supabase.com:6543`, user `docket_app.<project-ref>`, `?pgbouncer=true&connection_limit=1` |
+| `DIRECT_URL` | same host on `:5432` (session mode; used only by Prisma CLI tasks) |
+| `AUTH_SECRET` | 48 random characters, stored encrypted in Vercel |
+
+Two things that cost real debugging time and are worth knowing up front:
+
+- **The pooler host is not always `aws-0`.** `aws-0-ap-southeast-1.pooler.supabase.com`
+  answers but rejects the tenant with *"tenant/user … not found"*; this project lives on
+  `aws-1`. `scripts/db-probe.mjs` finds the working host/port from inside a Vercel build
+  (DNS + `select count(*) from "User"` per candidate) and prints `RESULT_OK host=… port=…`.
+- **`db.<project-ref>.supabase.co` resolves to IPv6 only**, and Vercel functions have no
+  IPv6 egress, so the direct host cannot serve the app. Use the pooler for `DATABASE_URL`.
+
+Steps to reproduce on a fresh account:
+
 1. **Supabase** → new project → *Project settings → Database*:
    - pooler URI (port `6543`) → `DATABASE_URL`, append
      `?pgbouncer=true&connection_limit=1`
@@ -173,9 +200,16 @@ Permission ranking: **OWNER > EDITOR > VIEWER**. `view` ≥ VIEWER, `edit` ≥ E
    ```
 
 3. **Vercel** → import the repository → set `DATABASE_URL`, `DIRECT_URL`,
-   `AUTH_SECRET`, `NODE_ENV=production` → deploy. The build command already runs
-   `prisma generate`.
-4. Smoke test the deployment (no dependencies, 24 checks):
+   `AUTH_SECRET`; leave `NODE_ENV` alone (Vercel sets it to `production`, which is why
+   `prisma` must stay in `dependencies`) → deploy.
+4. **Turn off Deployment Protection** for the project
+   (*Settings → Deployment Protection → Vercel Authentication → Disabled*). The default
+   `all_except_custom_domains` policy answers every `<project>.vercel.app` request with a
+   `302` to `vercel.com/sso-api`, so a reviewer — and any smoke test — never reaches the
+   app. This was the one production-only failure mode; with protection on, `/login`
+   returned `302` and `POST /api/auth/login` returned `401`, which looks exactly like a
+   broken login.
+5. Smoke test the deployment (no dependencies, 24 checks):
 
    ```bash
    node scripts/smoke-prod.mjs https://your-app.vercel.app
@@ -187,6 +221,10 @@ Permission ranking: **OWNER > EDITOR > VIEWER**. `view` ≥ VIEWER, `edit` ≥ E
    and cleans up. Exit code 0 = all green. The same flow can be walked by hand in
    a browser: Alice → create/format → refresh → import → share with Bob as Viewer
    → Bob in a private window sees read-only → Dave gets 404.
+
+   `scripts/probe-prod.mjs <url>` prints status + `location` + a body snippet for the
+   same endpoints; it identifies protection redirects, 401s and 500s in one run when a
+   host has no shell access.
 
 **Render fallback:** same repository, same Supabase database — set the same four
 environment variables, build `npm run build`, start `npm start`.

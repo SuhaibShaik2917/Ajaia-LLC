@@ -15,7 +15,10 @@ that session; nothing is reconstructed from imagination.
 | `curl` | Manual API matrix verification against the running dev server |
 | Vitest (+ jsdom for component tests) | 44 automated tests |
 | `tsc --noEmit`, `next lint`, `next build` | Type, lint and production-build gates after each phase |
-| `git` | Phase-sized commits |
+| `git` / `gh` | Phase-sized commits, repository metadata |
+| Supabase connector (`execute_query`, `get_project_health`) | Schema, seed data, RLS and the `docket_app` role — the only way in, since the sandbox cannot reach `*.supabase.com` |
+| Vercel connector (projects, env vars, deployments, build logs) | Deployments and build-step diagnostics |
+| Vercel **build steps** as a test harness | `scripts/db-probe.mjs` and `scripts/smoke-prod.mjs` run inside the build, which *does* have internet, and their stdout is read back from the build log |
 
 No browser binary was available in the sandbox (Chromium could not launch —
 missing `libnspr4`), so UI verification used the production build, server-rendered
@@ -113,6 +116,17 @@ regression net: every permission row in `ARCHITECTURE.md` has a test.
    `getDocumentWithAccess`.
 5. **Fix the test, not the product, when the product is right.** The underline
    case was a wrong assumption in a test, not a bug; the fix documented reality.
+6. **When you cannot reach the host, print the evidence from inside it.** With no
+   outbound access to Vercel or Supabase, a failing live login (2/8 checks) was
+   undiagnosable from the sandbox. Two throwaway scripts fixed that: `db-probe.mjs`
+   (DNS + connect per candidate pooler host) and `probe-prod.mjs` (status, `location`,
+   body snippet per endpoint), both executed as Vercel build steps. The `probe-prod`
+   output — `302 → https://vercel.com/sso-api…` plus a `_vercel_sso_nonce` cookie —
+   named the cause (Deployment Protection) in one run and saved a fruitless hunt
+   through the auth code. The same trick then verified the fix: `24/24 checks passed`.
+7. **Distrust a green local result when the platform differs.** Locally the smoke test
+   passed 24/24 while production failed 6/8; the difference was never the code, it was
+   egress (IPv6-only direct host), a platform default (protection) and `NODE_ENV`.
 
 ## 6. Where AI accelerated the work, and where it needed supervision
 
