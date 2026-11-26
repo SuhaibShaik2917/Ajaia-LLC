@@ -154,6 +154,16 @@ export function useAutosave({
   /** Title changes are saved immediately (no debounce). */
   const saveTitle = useCallback((title: string) => queue({ title }, true), [queue]);
 
+  /**
+   * Clears the conflict lock after the client reloaded the latest version,
+   * so editing (and autosave) can resume.
+   */
+  const resolveConflict = useCallback(() => {
+    conflictRef.current = false;
+    pendingRef.current = null;
+    if (mountedRef.current) setState(canEdit ? "idle" : "readonly");
+  }, [canEdit]);
+
   /** Manual retry from the save-status pill. */
   const retry = useCallback(() => {
     const queued = pendingRef.current;
@@ -191,5 +201,13 @@ export function useAutosave({
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [canEdit, documentId]);
 
-  return { state, lastSavedAt, scheduleContentSave, saveTitle, retry, flush };
+  return {
+    state,
+    lastSavedAt,
+    scheduleContentSave,
+    saveTitle,
+    retry,
+    flush,
+    resolveConflict,
+  };
 }

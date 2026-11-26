@@ -25,7 +25,7 @@ documents with roles the server actually enforces.
 | Import | `.txt` and `.md` → new document, max 1 MB, UTF-8 only; rejects wrong type, empty files, invalid encoding, oversize |
 | Sharing | Share by email as Viewer/Editor, change role, revoke; owner-only management |
 | Permissions | Viewer read-only in the UI **and** 403 from the API; unshared users get 404; unauthenticated requests get 401 |
-| Quality | 43 Vitest tests against a real Postgres, `tsc --noEmit` clean, `next build` clean, ESLint clean |
+| Quality | 44 Vitest tests against a real Postgres, `tsc --noEmit` clean, `next build` clean, ESLint clean |
 
 **P1 — complete:** delete document (owner only, confirm dialog), version-conflict
 409 with a reload banner, toasts, mobile drawer navigation, dashboard search,
@@ -111,7 +111,7 @@ npm test
 
 The suite applies `prisma/sql/init.sql`, truncates all tables before each test and
 calls the **real route handlers** with a signed session cookie injected, against a
-real Postgres. 43 tests across 7 files:
+real Postgres. 44 tests across 7 files:
 
 | File | Covers |
 | --- | --- |

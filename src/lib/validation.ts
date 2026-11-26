@@ -79,8 +79,6 @@ export const patchDocumentSchema = z
 
 export type PatchDocumentInput = z.infer<typeof patchDocumentSchema>;
 
-export const documentIdSchema = z.string().min(1, "Document id is required.").max(200);
-
 /* ----------------------------------------------------------------- shares */
 
 export const shareRoleSchema = z.enum(["VIEWER", "EDITOR"], {
@@ -105,10 +103,3 @@ export const updateShareSchema = z.object({
 });
 
 export type UpdateShareInput = z.infer<typeof updateShareSchema>;
-
-/* ----------------------------------------------------------------- import */
-
-export const importFileMetaSchema = z.object({
-  filename: z.string().min(1).max(255),
-  size: z.number().int().nonnegative(),
-});

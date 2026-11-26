@@ -64,11 +64,3 @@ export async function getDocumentWithAccess(
   const { shares: _shares, ...rest } = document;
   return { document: rest, myRole };
 }
-
-export function roleRank(role: Role): number {
-  return RANK[role];
-}
-
-export function canEdit(role: Role): boolean {
-  return RANK[role] >= RANK.EDITOR;
-}

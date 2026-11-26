@@ -19,12 +19,6 @@ function prune(now: number) {
   }
 }
 
-export function rateLimitRemaining(key: string): number {
-  const bucket = buckets.get(key);
-  if (!bucket || bucket.resetAt <= Date.now()) return MAX_ATTEMPTS;
-  return Math.max(0, MAX_ATTEMPTS - bucket.count);
-}
-
 /** Records a failed attempt. Returns false once the key is blocked. */
 export function registerFailedAttempt(key: string): boolean {
   const now = Date.now();
@@ -59,5 +53,3 @@ export function secondsUntilUnlocked(key: string): number {
   if (!bucket) return 0;
   return Math.max(0, Math.ceil((bucket.resetAt - Date.now()) / 1000));
 }
-
-export const LOGIN_RATE_LIMIT = { windowMs: WINDOW_MS, maxAttempts: MAX_ATTEMPTS };

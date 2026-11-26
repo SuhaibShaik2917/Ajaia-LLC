@@ -132,6 +132,43 @@ describe("useAutosave", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it("resumes saving after the conflict is resolved by a reload", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockImplementationOnce(
+        async () =>
+          ({
+            ok: false,
+            status: 409,
+            json: async () => ({ error: { code: "VERSION_CONFLICT", message: "Stale." } }),
+          }) as unknown as Response
+      )
+      .mockImplementation(async () => patchResponse(2));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(() =>
+      useAutosave({ documentId: "doc1", initialVersion: 1, canEdit: true })
+    );
+
+    act(() => {
+      result.current.scheduleContentSave(doc);
+    });
+    await advance(1000);
+    expect(result.current.state).toBe("conflict");
+
+    act(() => {
+      result.current.resolveConflict();
+    });
+    expect(result.current.state).toBe("idle");
+
+    act(() => {
+      result.current.scheduleContentSave(doc);
+    });
+    await advance(1000);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result.current.state).toBe("saved");
+  });
+
   it("retries failed saves, then surfaces the error state and can retry manually", async () => {
     const fetchMock = vi.fn(async () => ({ ok: false, status: 500, json: async () => ({}) }) as unknown as Response);
     vi.stubGlobal("fetch", fetchMock);

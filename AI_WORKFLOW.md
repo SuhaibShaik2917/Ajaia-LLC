@@ -13,7 +13,7 @@ that session; nothing is reconstructed from imagination.
 | Node 22 / npm | Package management, Next.js, Prisma CLI |
 | PostgreSQL 19 (local, embedded binaries outside the repo) | Real database for `dev`, seed and the Vitest suite |
 | `curl` | Manual API matrix verification against the running dev server |
-| Vitest (+ jsdom for component tests) | 43 automated tests |
+| Vitest (+ jsdom for component tests) | 44 automated tests |
 | `tsc --noEmit`, `next lint`, `next build` | Type, lint and production-build gates after each phase |
 | `git` | Phase-sized commits |
 
@@ -75,7 +75,7 @@ Each phase ended with the same gates, run in this order:
 ```bash
 npx tsc --noEmit     # types
 npm run lint         # eslint
-npm test             # 43 tests against real Postgres
+npm test             # 44 tests against real Postgres
 npm run build        # prisma generate && next build
 ```
 

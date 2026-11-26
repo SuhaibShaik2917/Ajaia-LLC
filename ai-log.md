@@ -135,14 +135,14 @@ viewer 403 → editor 200 after promotion; revoke → 404; non-owner 403;
 
 **Did:** Vitest config with a real-Postgres test database, global setup that
 applies the bootstrap SQL, per-test truncation, a helper that signs a session and
-builds `NextRequest` objects so route handlers are exercised directly. 43 tests
+builds `NextRequest` objects so route handlers are exercised directly. 44 tests
 in 7 files (documents, permissions, import, content, format, autosave, toolbar).
 
 **Corrections:** the init SQL was not idempotent for the enum type (fixed with a
 `DO` block); the include glob silently skipped `.tsx` suites; Vitest needed
 `esbuild.jsx = "automatic"`.
 
-**Verified:** `npm test` → 7 files / 43 tests passed.
+**Verified:** `npm test` → 7 files / 44 tests passed.
 
 ## Phase 10 — Deploy (blocked, ~10 min investigating)
 

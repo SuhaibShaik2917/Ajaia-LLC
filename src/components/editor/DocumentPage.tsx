@@ -59,7 +59,7 @@ export function DocumentPage({ documentId }: { documentId: string }) {
   const myRole: Role | null = load.status === "ready" ? load.data.myRole : null;
   const canEdit = myRole === "OWNER" || myRole === "EDITOR";
 
-  const { state, scheduleContentSave, saveTitle, retry, flush } = useAutosave({
+  const { state, scheduleContentSave, saveTitle, retry, flush, resolveConflict } = useAutosave({
     documentId,
     initialVersion: version,
     canEdit,
@@ -191,6 +191,7 @@ export function DocumentPage({ documentId }: { documentId: string }) {
               variant="secondary"
               onClick={() => {
                 void fetchDocument().then(() => {
+                  resolveConflict();
                   setConflict(false);
                   toast.success("Loaded the latest version.");
                 });
