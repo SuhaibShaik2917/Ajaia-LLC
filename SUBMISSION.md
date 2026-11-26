@@ -9,6 +9,23 @@
 | **Docs** | [README](./README.md) · [ARCHITECTURE](./ARCHITECTURE.md) · [AI_WORKFLOW](./AI_WORKFLOW.md) · [AGENTS](./AGENTS.md) · [ai-log](./ai-log.md) |
 | **Tests** | `npm test` → 7 files, 44 tests, all passing against a real Postgres |
 
+## Deliverables map
+
+Each item the brief asks for, and where it lives in this repository.
+
+| Brief item | Where | Status |
+| --- | --- | --- |
+| Source code | this repository (`src/`, `prisma/`, `tests/`, `scripts/`) | ✅ |
+| `README.md` with local setup and run instructions | [README.md](./README.md#quick-start) — five commands, plus `scripts/dev-postgres.sh` if you have no Postgres | ✅ |
+| Short architecture note | [ARCHITECTURE.md](./ARCHITECTURE.md) — request flow, ER diagram, permission matrix, autosave/conflict handling, import pipeline, production topology, trade-offs | ✅ |
+| AI workflow note | [AI_WORKFLOW.md](./AI_WORKFLOW.md) + the raw phase log in [ai-log.md](./ai-log.md) | ✅ |
+| `SUBMISSION.md` listing exactly what is included | this file | ✅ |
+| Live product URL | https://docket-suhaibshaik2917.vercel.app | ✅ 24/24 acceptance checks |
+| Text file with the walkthrough video URL | [VIDEO_URL.txt](./VIDEO_URL.txt) | ⏳ contains `PASTE_URL_HERE` — recording is the one remaining item, and the timestamped script is at the bottom of this file |
+| Screenshots or demo GIF *if setup requires extra steps* | none | n/a by design: the hosted URL needs no setup, and local setup is `npm install` + one `db push`. The README documents the exact commands instead of a screenshot gallery |
+| Seeded users / credentials for reviewing sharing | [Demo credentials](#demo-credentials) below, also on the login page as one-click chips | ✅ |
+| Statement of what is partial and what comes next | [Known issues / limitations](#known-issues--limitations) and [If I had another 2–4 hours](#if-i-had-another-24-hours) | ✅ |
+
 ## Demo credentials
 
 Password for every account: `Demo@1234`
@@ -77,6 +94,35 @@ out of scope in the brief; the remaining time went into tests and documentation.
    this sandbox. On a networked machine use `npx prisma db push`.
 7. Imported markdown is normalised by the Tiptap schema (unknown HTML dropped by
    design), so whitespace and exotic syntax may change on import.
+8. **The demo database is a free Supabase project.** Free projects pause after a week of
+   inactivity; if the live URL ever answers with a connection error, open the Supabase
+   dashboard and restore the project (`ajaia`), then redeploy from the branch. Values are
+   all in the deployment table in `README.md`.
+
+## If I had another 2–4 hours
+
+In priority order, each sized roughly by value rather than effort:
+
+1. **A reviewer-facing "reseed" button or CLI (§1h).** The demo database is mutable —
+   anyone who runs the acceptance flow deletes what they create, but a reviewer can
+   still leave stray documents behind. A `npm run db:reset && npm run db:seed` one-liner
+   already works; a button on the dashboard for demo users would make the demo
+   self-healing without a shell. *(Left out: deleting other users' data from the UI is a
+   foot-gun that needs a real ownership story first.)*
+2. **Optimistic-concurrency polish (§1–2h).** The 409 path exists and is tested, but the
+   banner is the only recovery route. A proper three-way merge — or per-block diffing on
+   the Tiptap document — would make concurrent edits far less lossy. *(Explicitly out of
+   the brief: real-time collaboration, so this is deliberately the cheap version.)*
+3. **Export (§1h).** Markdown export is nearly free: a Tiptap JSON → Markdown serializer
+   is ~60 lines and makes the import test round-trip in both directions.
+4. **Broader import (§1h).** PDF is rejected with a clear error today; `.docx` via
+   `mammoth` would cover the most common real-world case, at the cost of one dependency.
+5. **Session hardening (§30 min).** Rotate the JWT signing key on a schedule and add
+   `__Host-` cookie prefixes. Not needed for a demo, cheap in production.
+6. **Screenshot/visual-regression pass (§1h).** The sandbox had no browser binary, so the
+   toolbar and layout were verified through jsdom tests and the production build only.
+   Playwright snapshots of the dashboard, editor and share dialog are the obvious next
+   quality gate.
 
 ## Video script (≈4–5 minutes)
 

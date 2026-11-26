@@ -176,6 +176,7 @@ This is the deployment that is actually live, not a hypothetical one.
 | `DATABASE_URL` | pooler `aws-1-ap-southeast-1.pooler.supabase.com:6543`, user `docket_app.<project-ref>`, `?pgbouncer=true&connection_limit=1` |
 | `DIRECT_URL` | same host on `:5432` (session mode; used only by Prisma CLI tasks) |
 | `AUTH_SECRET` | 48 random characters, stored encrypted in Vercel |
+| Free-tier caveat | Supabase pauses idle free projects after about a week. If the live URL starts answering with a database connection error, restore project `ajaia` in the Supabase dashboard and redeploy — nothing in the app needs to change |
 
 Two things that cost real debugging time and are worth knowing up front:
 
