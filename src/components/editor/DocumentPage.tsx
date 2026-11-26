@@ -59,7 +59,7 @@ export function DocumentPage({ documentId }: { documentId: string }) {
   const myRole: Role | null = load.status === "ready" ? load.data.myRole : null;
   const canEdit = myRole === "OWNER" || myRole === "EDITOR";
 
-  const { state, scheduleContentSave, saveTitle, retry } = useAutosave({
+  const { state, scheduleContentSave, saveTitle, retry, flush } = useAutosave({
     documentId,
     initialVersion: version,
     canEdit,
@@ -69,6 +69,9 @@ export function DocumentPage({ documentId }: { documentId: string }) {
     },
     onConflict: () => setConflict(true),
   });
+
+  // Flush any pending edit when navigating away inside the SPA.
+  useEffect(() => () => flush(), [flush]);
 
   const onContentUpdate = useCallback(
     (content: TiptapDoc) => {
@@ -202,7 +205,7 @@ export function DocumentPage({ documentId }: { documentId: string }) {
       <div className="mx-auto w-full max-w-[900px] px-2 pb-16 pt-4 sm:px-5 sm:pt-6">
         <article className="overflow-hidden rounded-xl border border-line bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
           <Editor
-            key={`${document.id}-${document.version === version ? "v" : "x"}`}
+            key={`${document.id}-v${document.version}`}
             content={document.content}
             editable={canEdit}
             onUpdate={onContentUpdate}

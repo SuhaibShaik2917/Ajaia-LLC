@@ -6,7 +6,13 @@
 --
 -- Keep in sync with prisma/schema.prisma.
 
-CREATE TYPE "ShareRole" AS ENUM ('VIEWER', 'EDITOR');
+DO $$
+BEGIN
+    CREATE TYPE "ShareRole" AS ENUM ('VIEWER', 'EDITOR');
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END
+$$;
 
 CREATE TABLE IF NOT EXISTS "User" (
     "id" TEXT NOT NULL,
@@ -46,14 +52,21 @@ CREATE UNIQUE INDEX IF NOT EXISTS "DocumentShare_documentId_userId_key"
     ON "DocumentShare"("documentId", "userId");
 CREATE INDEX IF NOT EXISTS "DocumentShare_userId_idx" ON "DocumentShare"("userId");
 
-ALTER TABLE "Document" DROP CONSTRAINT IF EXISTS "Document_ownerId_fkey";
-ALTER TABLE "Document" ADD CONSTRAINT "Document_ownerId_fkey"
-    FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'Document_ownerId_fkey') THEN
+        ALTER TABLE "Document" ADD CONSTRAINT "Document_ownerId_fkey"
+            FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
 
-ALTER TABLE "DocumentShare" DROP CONSTRAINT IF EXISTS "DocumentShare_documentId_fkey";
-ALTER TABLE "DocumentShare" ADD CONSTRAINT "DocumentShare_documentId_fkey"
-    FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'DocumentShare_documentId_fkey') THEN
+        ALTER TABLE "DocumentShare" ADD CONSTRAINT "DocumentShare_documentId_fkey"
+            FOREIGN KEY ("documentId") REFERENCES "Document"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
 
-ALTER TABLE "DocumentShare" DROP CONSTRAINT IF EXISTS "DocumentShare_userId_fkey";
-ALTER TABLE "DocumentShare" ADD CONSTRAINT "DocumentShare_userId_fkey"
-    FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'DocumentShare_userId_fkey') THEN
+        ALTER TABLE "DocumentShare" ADD CONSTRAINT "DocumentShare_userId_fkey"
+            FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    END IF;
+END
+$$;

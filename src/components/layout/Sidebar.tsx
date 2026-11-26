@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Files, LogOut, Plus, Share2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAppShell } from "@/components/layout/AppShell";
@@ -29,14 +29,10 @@ export function Sidebar({ user, onNavigate, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { openImport, createDocument, creating } = useAppShell();
-  const [view, setView] = useState<"owned" | "shared">("owned");
+  const searchParams = useSearchParams();
   const [loggingOut, setLoggingOut] = useState(false);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setView(params.get("view") === "shared" ? "shared" : "owned");
-  }, [pathname]);
-
+  const view = searchParams.get("view") === "shared" ? "shared" : "owned";
   const isDashboard = pathname === "/";
 
   const logout = async () => {

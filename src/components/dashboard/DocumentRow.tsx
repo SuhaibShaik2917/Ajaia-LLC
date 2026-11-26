@@ -52,7 +52,7 @@ export function DocumentRow({ document, onDelete }: DocumentRowProps) {
           type="button"
           onClick={() => onDelete(document)}
           aria-label={`Delete ${document.title}`}
-          className="rounded-md p-1.5 text-mute opacity-0 transition hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100"
+          className="rounded-md p-1.5 text-mute transition hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
         >
           <Trash2 className="h-4 w-4" aria-hidden />
         </button>
