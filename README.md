@@ -103,6 +103,7 @@ the browser — every env var is read on the server only.
 | `npm run db:push` | `prisma db push` — sync schema to the database |
 | `npm run db:seed` | Seed demo users/documents/shares (idempotent) |
 | `npm run db:init` | Apply `prisma/sql/init.sql` with `pg` (fallback, see below) |
+| `node scripts/smoke-prod.mjs <url>` | End-to-end acceptance smoke test against a running app (local or deployed) |
 
 ---
 
@@ -174,9 +175,18 @@ Permission ranking: **OWNER > EDITOR > VIEWER**. `view` ≥ VIEWER, `edit` ≥ E
 3. **Vercel** → import the repository → set `DATABASE_URL`, `DIRECT_URL`,
    `AUTH_SECRET`, `NODE_ENV=production` → deploy. The build command already runs
    `prisma generate`.
-4. Smoke test in production: log in as Alice → create and format a document →
-   refresh (persists) → import a `.md` → share with Bob as Viewer → Bob (private
-   window) sees a read-only document → Dave gets a 404.
+4. Smoke test the deployment (no dependencies, 24 checks):
+
+   ```bash
+   node scripts/smoke-prod.mjs https://your-app.vercel.app
+   ```
+
+   It logs in as Alice/Bob/Dave, creates and formats a document, reloads it,
+   imports `.md`, rejects a `.pdf`, shares with Bob (Viewer → 403 on write),
+   promotes him to Editor (200 on write), checks Dave gets 404, revokes, deletes
+   and cleans up. Exit code 0 = all green. The same flow can be walked by hand in
+   a browser: Alice → create/format → refresh → import → share with Bob as Viewer
+   → Bob in a private window sees read-only → Dave gets 404.
 
 **Render fallback:** same repository, same Supabase database — set the same four
 environment variables, build `npm run build`, start `npm start`.

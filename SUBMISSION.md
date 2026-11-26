@@ -37,7 +37,7 @@ Password for every account: `Demo@1234`
 | Viewer UI read-only **and** server 403 on Viewer PATCH | ✅ | Disabled toolbar + banner; `viewer PATCH → 403`, DB unchanged (test) |
 | Unshared user → 404; unauthenticated → 401 | ✅ | `tests/permissions.test.ts`, `tests/documents.test.ts` |
 | `npm test` green, `tsc --noEmit` clean, `next build` succeeds | ✅ | 44/44 tests, 0 type errors, 0 lint warnings, successful production build |
-| Deployed (Vercel + Supabase) with smoke test | ❌ **not done** | No cloud credentials/egress in this environment; steps + smoke-test script documented in README |
+| Deployed (Vercel + Supabase) with smoke test | ❌ **not done** | No cloud credentials/egress in this environment; steps documented in README, and `node scripts/smoke-prod.mjs <url>` runs the full acceptance flow (24 checks, passing against localhost) |
 | README, ARCHITECTURE, AI_WORKFLOW, SUBMISSION, VIDEO_URL.txt | ✅ | This repository (video URL is a placeholder by design) |
 | No secrets committed; `.env.example` present | ✅ | `.env` is git-ignored and never committed; `.env.example` documents every variable |
 
