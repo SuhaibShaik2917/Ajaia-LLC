@@ -1,0 +1,22 @@
+name: Production smoke test
+
+# The sandbox used to build this project cannot reach *.vercel.app, so the
+# acceptance smoke test runs here instead, against the live deployment.
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Base URL to test
+        required: true
+        default: https://docket-suhaibshaik2917.vercel.app
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Run acceptance smoke test
+        run: node scripts/smoke-prod.mjs "${{ inputs.base_url }}"
